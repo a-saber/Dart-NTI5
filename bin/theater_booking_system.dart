@@ -1,6 +1,8 @@
 
 // booked => true
 // empty => false
+import 'dart:io';
+
 void main(){
   List<List<bool>> seats = List.generate(5, (int index)=> List.filled(5, false));
   Map<List<int>, Map<String, String>> bookings = {};
@@ -23,4 +25,7 @@ void main(){
     }
   }
  
+}
+int userInput(){
+  return int.parse(stdin.readLineSync()!);
 }
