@@ -31,6 +31,23 @@ void main()async{
     }
   }
 
+  try{
+    var tasksReposne =  await dio.get('my_tasks', options: Options(
+      headers: {
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJmcmVzaCI6ZmFsc2UsImlhdCI6MTc3MjIwMDA2NSwianRpIjoiOGQ2NDRmMTMtNWQ5NC00YmM5LWI4MGQtMzM4N2QyM2E4NDljIiwidHlwZSI6ImFjY2VzcyIsInN1YiI6MywibmJmIjoxNzcyMjAwMDY1LCJjc3JmIjoiOWNiNjUzYjUtYzZjOC00M2Q1LTgzYjctNjExNDE1N2E5ZGRlIiwiZXhwIjoxNzcyMjAwOTY1fQ.NzDtJr5r-2CuRR54NWAvTsKTAU-xdnFYgTIypqayyrk'
+      }
+    ));
+    print(tasksReposne.data.toString());
+  }
+  catch(e){
+    if(e is DioException ){
+      print(e.response.toString());
+    }
+    else {
+      print(e.toString());
+    }
+  }
+
   // try{
   //   var loginReposne =  await dio.post('register', data: FormData.fromMap({
   //     'username': 'ahmed',
