@@ -6,24 +6,29 @@ import 'dart:io';
 void main(){
   List<List<bool>> seats = List.generate(5, (int index)=> List.filled(5, false));
   Map<List<int>, Map<String, String>> bookings = {};
-
-  bool flag = true;
-  while(flag){
-    displayOptions();
-    int choice = userInput((int choice)=> choice >= 1 && choice <= 4);
-    switch(choice){
-      case 1:
-        displaySeats(seats);
-      case 2:
-        newBook(seats, bookings);
-      case 3:
-        displayBookings(bookings);
-      case 4:
-        flag = false;
-      default:
-        print("Invalid choice");
-    }
-  }
+  print("Enter row number");
+  int row = userInput<int>(validateSeat);
+  print(row);
+  print("Enter rclient name");
+  String name = userInput<String>((String input)=> input.isNotEmpty ? input: null);
+  print(name);
+  // bool flag = true;
+  // while(flag){
+  //   displayOptions();
+  //   int choice = userInput((int choice)=> choice >= 1 && choice <= 4);
+  //   switch(choice){
+  //     case 1:
+  //       displaySeats(seats);
+  //     case 2:
+  //       newBook(seats, bookings);
+  //     case 3:
+  //       displayBookings(bookings);
+  //     case 4:
+  //       flag = false;
+  //     default:
+  //       print("Invalid choice");
+  //   }
+  // }
  
 }
 void displayOptions(){
@@ -49,19 +54,24 @@ void displayBookings(Map<List<int>, Map<String, String>> bookings){
 }
 void newBook(List<List<bool>> seats, Map<List<int>, Map<String, String>> bookings){
   print("Enter row number");
-  int row = userInput(validateSeat);
-  int col = userInput(validateSeat);
+  int row = userInput<int>(validateSeat);
+  print(row);
 }
-bool validateSeat(int choice)=> choice >= 1 && choice <= 5;
-int userInput(bool Function(int choice) validator){
+int? validateSeat(String input){
+  int? seatNumber = int.tryParse(input);
+  if(seatNumber != null){
+    if(seatNumber >= 1 && seatNumber <= 5){
+      return seatNumber;
+    }
+  }
+  return null;
+}
+T userInput<T>(T? Function(String input) validator){
   while(true){
     String input = stdin.readLineSync()??"";
-    int? choice = int.tryParse(input);
-    if(choice != null){
-      bool validateResult = validator(choice);
-      if(validateResult){
-        return choice;
-      }
+    T? result = validator(input);
+    if(result != null){
+      return result;
     } 
   } 
 }
