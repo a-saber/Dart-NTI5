@@ -91,8 +91,8 @@ void main()async{
   Map<String, dynamic> userData = await auth();
   print(userData.toString());
 
-  displayTasksMenu();
-      int mainChoice = userInput((String input){
+  while(true){displayTasksMenu();
+    int mainChoice = userInput((String input){
       int? choice = int.tryParse(input);
       if(choice != null){
         if(choice >= 1 && choice <= 5){
@@ -108,11 +108,76 @@ void main()async{
         print("Failed to fetch tasks: $errorMsg");
       }, 
       (List tasks){
-        print(tasks.toString());
+        for(var task in tasks){
+          print(task['id ']);
+          print(task.iD);
+          print(task['title']);
+          print(task.title);
+          print(task['description']);
+          print('----------------');
+        }
       });
     }
+    else if(mainChoice == 3){
+      var updateTaskResponse = await updateTask(userData['access_token']);
+      updateTaskResponse.fold((String errorMsg){
+        print("Failed to update task: $errorMsg");
+      }, 
+      (Map<String, dynamic> updatedTask){
+        print(updatedTask.toString());
+      });
+    }
+    else if(mainChoice == 5){
+      print("See you later!");
+      exit(0);
+    }
+  }
+
 
 }
+
+
+Future<Either<String,Map<String, dynamic>>> updateTask(String accessToken)async
+{
+  int taskId = userInput((String input){
+    int? choice = int.tryParse(input);
+    if(choice != null){
+      if(choice >0 ){
+        return choice;
+      }
+    }
+    return null;
+  });
+  String newTitle = userInput(validateNonEmpty);
+  String newDescription = userInput(validateNonEmpty);
+
+  try{
+    var updateResponse = await dio.put(
+      'tasks/$taskId',
+      data: FormData.fromMap({
+        'title': newTitle,
+        'description': newDescription
+      }),
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $accessToken'
+        }
+      )
+    );
+    return Right(updateResponse.data as Map<String, dynamic>);
+  }
+  catch(e){
+    if(e is DioException){
+      var errorResponse = e.response?.data as Map<String, dynamic>;
+      return Left(errorResponse['message']?? 'Unknown error');
+    }
+    else{
+      print(e.toString());
+      return Left('An Error occurred.\nTry again later');
+    }
+  }
+}
+
 
 Future<Either<String,List>> getTasks(String accessToken)async
 {
