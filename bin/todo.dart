@@ -10,6 +10,13 @@ void displayAuthMenu(){
   print('2. register');
   print('3. exit');
 }
+void displayTasksMenu(){
+  print('1. get tasks');
+  print('2. add task');
+  print('3. update task');
+  print('4. delete task');
+  print('5. exit');
+}
 T userInput<T>(T? Function(String input) validator){
   while(true){
     String input = stdin.readLineSync()??"";
@@ -51,11 +58,89 @@ Future<Either<String, Map<String, dynamic>>> login() async{
       return Left('An Error occurred.\nTry again later');
     }
   }
+}
+Future<Either<String, String>> register() async{
+  print("Enter username");
+  String username = userInput(validateNonEmpty);
+  print("Enter password");
+  String password = userInput(validateNonEmpty);
+
+  try{
+    var registerResponse = await dio.post(
+      'register',
+      data: FormData.fromMap({
+        'username': username,
+        'password': password
+      })
+    );
+    var successResponse = registerResponse.data as Map<String, dynamic>;
+    return Right(successResponse['message'] ?? 'Registration successful');
+  }
+  catch(e){
+    if(e is DioException){
+      var errorResponse = e.response?.data as Map<String, dynamic>;
+      return Left(errorResponse['message']?? 'Unknown error');
+    }
+    else{
+      return Left('An Error occurred.\nTry again later');
+    }
+  }
+}
+
+void main()async{
+  Map<String, dynamic> userData = await auth();
+  print(userData.toString());
+
+  displayTasksMenu();
+      int mainChoice = userInput((String input){
+      int? choice = int.tryParse(input);
+      if(choice != null){
+        if(choice >= 1 && choice <= 5){
+          return choice;
+        }
+      }
+      return null;
+    });
+
+    if(mainChoice == 1){
+      var tasksResponse = await getTasks(userData['access_token']);
+      tasksResponse.fold((String errorMsg){
+        print("Failed to fetch tasks: $errorMsg");
+      }, 
+      (List tasks){
+        print(tasks.toString());
+      });
+    }
 
 }
 
-register(){}
-void main()async{
+Future<Either<String,List>> getTasks(String accessToken)async
+{
+  try{
+    var registerResponse = await dio.get(
+      'my_tasks',
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $accessToken'
+        }
+      )
+    );
+    var tasksResponse = registerResponse.data as Map<String, dynamic>;
+    return Right(tasksResponse['tasks']);
+  }
+  catch(e){
+    if(e is DioException){
+      var errorResponse = e.response?.data as Map<String, dynamic>;
+      return Left(errorResponse['message']?? 'Unknown error');
+    }
+    else{
+      print(e.toString());
+      return Left('An Error occurred.\nTry again later');
+    }
+  }
+}
+
+ Future<Map<String, dynamic>> auth()async {
   Map<String, dynamic> userData = {};
   while(true){ 
     displayAuthMenu();
@@ -85,12 +170,24 @@ void main()async{
         break;
       }
     }
-    
+    else if( authChoice == 2){
+      var result = await register();
+      result.fold(
+        (String errorMsg){
+          print("Registration Failed: $errorMsg");
+        }, 
+        (String successMsg){
+          print(successMsg);
+        }
+      );
+    }
+    else{
+      print("See you later!");
+      exit(0);
+    }
   }
-  print(userData.toString());
-}
-
-
+  return userData;
+ }
 
 
 
