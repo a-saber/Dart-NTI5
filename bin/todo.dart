@@ -2,6 +2,36 @@ import 'dart:io';
 
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+
+class Task{
+  String? createdAt;
+  String? discription;
+  int? id;
+  String? imagePath;
+  String? title;
+
+  Task({this.createdAt, this.discription, this.id, this.imagePath, this.title});
+
+  Task.fromJson(Map<String, dynamic> json){
+    createdAt = json['created_at'];
+    discription = json['description'];  
+    id = json['id'];
+    imagePath = json['image_path'];
+    title = json['title'];
+  }
+
+  Map<String, dynamic> toJson(){
+    return {
+      'created_at': createdAt,
+      'description': discription,
+      'id': id,
+      'image_path': imagePath,
+      'title': title
+    };
+  }
+}
+
+
   var dio = Dio( BaseOptions(
     baseUrl: 'https://ntitodo-production-779a.up.railway.app/api/'
   ));
@@ -107,15 +137,24 @@ void main()async{
       tasksResponse.fold((String errorMsg){
         print("Failed to fetch tasks: $errorMsg");
       }, 
-      (List tasks){
+      (List<Task> tasks){
         for(var task in tasks){
-          print(task['id ']);
-          print(task.iD);
-          print(task['title']);
+          print(task.id);
           print(task.title);
-          print(task['description']);
+          print(task.discription);
+          print(task.imagePath);
+          print(task.createdAt);
           print('----------------');
         }
+      });
+    }
+    else if(mainChoice == 2){
+      var addTaskResponse = await addTask(userData['access_token']);
+      addTaskResponse.fold((String errorMsg){
+        print("Failed to add task: $errorMsg");
+      }, 
+      (String successMsg){
+        print(successMsg);
       });
     }
     else if(mainChoice == 3){
@@ -179,7 +218,39 @@ Future<Either<String,Map<String, dynamic>>> updateTask(String accessToken)async
 }
 
 
-Future<Either<String,List>> getTasks(String accessToken)async
+Future<Either<String, String>> addTask(String accessToken)async
+{
+  String newTitle = userInput(validateNonEmpty);
+  String newDescription = userInput(validateNonEmpty);
+  Task newTask = Task(title: newTitle, discription: newDescription);
+
+  try{
+    var addResponse = await dio.post(
+      'new_task',
+      data: FormData.fromMap(newTask.toJson()),
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $accessToken'
+        }
+      )
+    );
+    var response = addResponse.data as Map<String, dynamic>;
+
+    return Right(response['message'] ?? 'Task added successfully');
+  }
+  catch(e){
+    if(e is DioException){
+      var errorResponse = e.response?.data as Map<String, dynamic>;
+      return Left(errorResponse['message']?? 'Unknown error');
+    }
+    else{
+      print(e.toString());
+      return Left('An Error occurred.\nTry again later');
+    }
+  }
+}
+
+Future<Either<String,List<Task>>> getTasks(String accessToken)async
 {
   try{
     var registerResponse = await dio.get(
@@ -191,7 +262,11 @@ Future<Either<String,List>> getTasks(String accessToken)async
       )
     );
     var tasksResponse = registerResponse.data as Map<String, dynamic>;
-    return Right(tasksResponse['tasks']);
+    List<Task> tasks = [];
+    for(var taskJson in tasksResponse['tasks']){
+      tasks.add(Task.fromJson(taskJson));
+    }
+    return Right(tasks);
   }
   catch(e){
     if(e is DioException){
