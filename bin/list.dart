@@ -19,6 +19,7 @@ void main(){
 
   List<int> x = [1,2,3,4,5,6,7,8,9];
   print(x.where(test1));
+  x.remove(9);
 
 
   x.map(transform);

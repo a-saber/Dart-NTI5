@@ -1,22 +1,32 @@
 
+import 'encapsulation.dart';
 void main(){
 
-  int x = 5;
-  var z ;
-  z = "as";
-  z = 10;
-  z.ceil();
+  User u1 = User(name: "John", );
+  // print(u1.setAge(-30));
+  u1.age = 30;
+  // print(u1.getAge());
+  print(u1.age);
 
-  dynamic y = 5.4;
-  print(y.ceil());
-  y = "ahned";
-  print(y.toUpperCase());
 
-  Object k = 10.5;
-  print((k as double).ceil());
 
-  k = "ahmed";
-  print((k as String).toUpperCase());
+
+  // int x = 5;
+  // var z ;
+  // z = "as";
+  // z = 10;
+  // z.ceil();
+
+  // dynamic y = 5.4;
+  // print(y.ceil());
+  // y = "ahned";
+  // print(y.toUpperCase());
+
+  // Object k = 10.5;
+  // print((k as double).ceil());
+
+  // k = "ahmed";
+  // print((k as String).toUpperCase());
 
 
 
